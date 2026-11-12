@@ -30,8 +30,12 @@ function renderStats(){const ds=getStatsDraws();const {n,s}=counts(ds);$('#statD
 
 function rank(a,desc,limit=50){return a.slice(1,limit+1).map((v,i)=>({id:i+1,v})).sort((x,y)=>desc?y.v-x.v||x.id-y.id:x.v-y.v||x.id-y.id)}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function nextDrawDate(){const d=new Date();d.setHours(12,0,0,0);do{d.setDate(d.getDate()+1)}while(d.getDay()!==2&&d.getDay()!==5);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function generate(){
  const method='advanced',q=3,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
+ const drawDate=nextDrawDate(),mathRng=seededRandom(stableSeed('euromillions-neutral-'+drawDate)),mathCombos=[];
+ while(mathCombos.length<3){const c={numbers:sampleWithRandom(50,5,mathRng),stars:sampleWithRandom(12,2,mathRng)};if(!mathCombos.some(x=>key(x)===key(c)))mathCombos.push(c)}
+ const mathKeys=new Set(mathCombos.map(key));
  let attempts=0;
  if(method==='advanced'){
   const weights={frequency:3,patterns:2,absence:1,balance:3,stars:2};
@@ -73,7 +77,7 @@ function generate(){
   const unique=new Set();
   for(const candidate of ranked){
    const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
-   if(unique.has(comboKey))continue;
+   if(unique.has(comboKey)||mathKeys.has(comboKey))continue;
    unique.add(comboKey);
    out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
    if(out.length===3)break;
@@ -82,10 +86,11 @@ function generate(){
  }else{
   while(out.length<q&&attempts<q*500){attempts++;let numbers,stars;if(method==='historical'&&draws.length){numbers=weightedPick(n,50,true);stars=weightedPick(s,12,true)}else if(method==='cold'&&draws.length){numbers=weightedPick(n,50,false);stars=weightedPick(s,12,false)}else if(method==='balanced'){numbers=balancedPick();stars=sample(12,2)}else{numbers=sample(50,5);stars=sample(12,2)}const c={numbers,stars},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);out.push(c)}
  }
- lastGenerated=out;
- $('#generated').innerHTML=out.length?out.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(Number.isFinite(c.score)?'<span class="combo-score">Índex multicriteri: '+c.score+'/100</span>':'')+'<button class="icon-button" data-copy="'+i+'">Copia</button><button class="icon-button" data-save="'+i+'">Desa</button></div></div>').join(''):'<div class="empty-state">No s’han pogut generar combinacions amb aquests filtres. Desactiva alguna restricció.</div>';
- $('#saveAllBtn').disabled=!out.length;$('#generatorMessage').textContent=out.length?'3 combinacions ordenades per la puntuació del model estadístic. Totes tenen la mateixa probabilitat real: 1 entre 139.838.160.':'No s’ha pogut calcular la combinació.';
- $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
+ lastGenerated=[...mathCombos,...out];
+ const renderGroup=(items,offset,model)=>items.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(model?'<span class="combo-score">Índex del model: '+c.score+'/100</span>':'<span class="combo-score">Equiprobable</span>')+'<button class="icon-button" data-copy="'+(offset+i)+'">Copia</button><button class="icon-button" data-save="'+(offset+i)+'">Desa</button></div></div>').join('');
+ $('#generated').innerHTML='<section class="generated-group"><div class="generated-group-head"><h3>1. Selecció matemàtica neutral</h3><p>3 combinacions equiprobables, fixades per al sorteig del '+formatDrawDate(drawDate)+'. No existeix un rànquing matemàtic: totes tenen exactament les mateixes opcions.</p></div>'+renderGroup(mathCombos,0,false)+'</section><section class="generated-group"><div class="generated-group-head"><h3>2. Les 3 millor puntuades pel model</h3><p>Ordenades segons freqüències, parelles i triples, absències, equilibri numèric i estrelles de l’històric carregat. És una puntuació heurística, no una probabilitat de guanyar.</p></div>'+(out.length?renderGroup(out,3,true):'<div class="empty-state">No s’han pogut calcular les combinacions del model.</div>')+'</section>';
+ $('#saveAllBtn').disabled=!lastGenerated.length;$('#generatorMessage').textContent='6 combinacions preparades per al sorteig del '+formatDrawDate(drawDate)+'. Les 6 tenen la mateixa probabilitat real: 1 entre 139.838.160 cadascuna.';
+ $('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
 }
 function weightedPick(freq,max,high){const pool=[];for(let i=1;i<=max;i++){const weight=Math.max(1,high?freq[i]+1:(draws.length*2-freq[i]+1));for(let j=0;j<Math.min(30,weight);j++)pool.push(i)}const out=[];while(out.length< (max===50?5:2)){const x=pool[Math.floor(Math.random()*pool.length)];if(!out.includes(x))out.push(x)}return out.sort((a,b)=>a-b)}
 function balancedPick(){let best=sample(50,5),score=999;for(let i=0;i<80;i++){const a=sample(50,5),ev=a.filter(x=>x%2===0).length,sum=a.reduce((x,y)=>x+y,0),bands=[0,0,0,0,0];a.forEach(x=>bands[Math.min(4,Math.floor((x-1)/10))]++);const sc=Math.abs(ev-2.5)*4+Math.abs(sum-127.5)/15+bands.filter(x=>x>0).length*-1; if(sc<score){score=sc;best=a}}return best}
