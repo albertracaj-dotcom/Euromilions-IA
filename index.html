@@ -24,6 +24,7 @@
       <button class="nav-item" data-view="probabilities"><span>◉</span> Probabilitats</button>
       <button class="nav-item" data-view="simulator"><span>⌁</span> Simulador</button>
       <button class="nav-item" data-view="history"><span>▤</span> Històric</button>
+      <button class="nav-item" data-view="guide"><span>ⓘ</span> Guia del joc</button>
       <div class="sidebar-note"><strong>Juga amb criteri.</strong><p>Les dades descriuen el passat. No prediuen el pròxim sorteig.</p></div>
       <div class="side-footer">EUROMILIONS AI <span>v1.0.0</span></div>
     </aside>
@@ -34,6 +35,7 @@
           <div class="hero-copy"><span class="eyebrow light">EUROMILIONS · 5 NÚMEROS + 2 ESTRELLES</span><h2>La sort no es pot predir.<br><em>Les probabilitats, sí.</em></h2><p>Analitza resultats, explora patrons històrics i genera combinacions amb criteris transparents.</p><button class="button button-gold" data-go="generator">Genera combinacions <span>→</span></button></div>
           <div class="hero-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-ball ball-main">AI</div><div class="floating-ball fb1">7</div><div class="floating-ball fb2">23</div><div class="floating-ball fb3">⭐</div></div>
         </div>
+        <div class="panel recent-panel"><div class="panel-head"><div><div class="eyebrow">DADES VERIFICADES</div><h2>Últims resultats oficials</h2><p>Resultats recents carregats de l'històric publicat per les loteries oficials.</p></div><a class="card-link" href="https://www.loteriasyapuestas.es/es/euromillones/resultados" target="_blank" rel="noopener">Font oficial ↗</a></div><div id="recentDraws" class="recent-draws"><div class="empty-state">Carregant resultats…</div></div><div class="result-source">Dades consultades: 12/11/2026 · <span id="officialDataStatus">Històric integrat</span></div></div>
         <div class="metric-grid">
           <article class="metric-card"><span class="metric-label">COMBINACIONS POSSIBLES</span><strong>139.838.160</strong><small>5 de 50 + 2 de 12</small></article>
           <article class="metric-card"><span class="metric-label">PROBABILITAT DEL POT</span><strong>1 entre 139,8 M</strong><small>Una combinació simple</small></article>
@@ -83,6 +85,23 @@
           <div class="table-wrap history-table"><table><thead><tr><th>Data</th><th>Números</th><th>Estrelles</th></tr></thead><tbody id="historyRows"><tr><td colspan="3" class="empty-cell">Encara no hi ha sortejos importats.</td></tr></tbody></table></div>
         </div>
         <div class="panel"><div class="panel-head"><div><div class="eyebrow">LES TEVES COMBINACIONS</div><h2>Combinacions desades</h2></div><button id="exportSavedBtn" class="button button-ghost">Exporta JSON</button></div><div id="savedList" class="saved-list"><div class="empty-state">Encara no has desat cap combinació.</div></div></div>
+      </section>
+      <section class="view" id="view-guide">
+        <div class="probability-hero"><div><div class="eyebrow light">GUIA RÀPIDA</div><h2>Entén EuroMillions</h2><p>Regles, estructura del sorteig i conceptes per interpretar les estadístiques sense confondre freqüència amb predicció.</p></div><div class="jackpot-odds"><strong>5 + 2</strong><span>números i estrelles</span></div></div>
+        <div class="guide-grid">
+          <article class="guide-card"><span class="guide-number">01</span><h3>Com funciona?</h3><p>Una aposta simple selecciona 5 números diferents de l'1 al 50 i 2 estrelles diferents de l'1 al 12. Els sortejos se celebren habitualment dimarts i divendres.</p></article>
+          <article class="guide-card"><span class="guide-number">02</span><h3>Quant costa?</h3><p>A Espanya, el preu publicat per una aposta simple és de 2,50 €. Cada combinació simple addicional multiplica el cost de la participació.</p></article>
+          <article class="guide-card"><span class="guide-number">03</span><h3>Quantes combinacions hi ha?</h3><p>Hi ha 2.118.760 maneres d'escollir 5 números i 66 maneres d'escollir 2 estrelles. En total: 139.838.160 combinacions.</p></article>
+          <article class="guide-card"><span class="guide-number">04</span><h3>Quan hi ha premi?</h3><p>Hi ha 13 categories. La categoria més baixa és 2 números; també es pot obtenir premi amb 1 número i 2 estrelles. Consulta la taula de probabilitats per veure cada cas.</p></article>
+        </div>
+        <div class="panel"><div class="eyebrow">CONCEPTES CLAU</div><h2>Com interpretar les dades</h2><div class="glossary-list">
+          <div><strong>Freqüència</strong><p>Quantes vegades ha aparegut un número dins del període analitzat. És una descripció del passat, no un indicador de probabilitat futura.</p></div>
+          <div><strong>Retard o absència</strong><p>Nombre de sortejos des de l'última aparició. Un número que fa temps que no surt no té cap deute estadístic.</p></div>
+          <div><strong>Combinació equilibrada</strong><p>Una combinació amb repartiment de parells/senars o rangs. Pot semblar més habitual, però no té més probabilitat que una combinació qualsevol.</p></div>
+          <div><strong>Simulació Monte Carlo</strong><p>Repetició d'experiments aleatoris per observar resultats possibles. Una simulació no anticipa el sorteig real.</p></div>
+        </div></div>
+        <div class="notice"><span>ⓘ</span><div><strong>Joc responsable</strong><p>EuroMillions és un joc d'atzar. Estableix un pressupost que et puguis permetre perdre, no persegueixis pèrdues i no interpretis les estadístiques com una promesa de guany. Aquesta aplicació és independent i no ven apostes.</p></div></div>
+        <div class="panel"><div class="eyebrow">FONTS I VERIFICACIÓ</div><h2>Consulta les fonts oficials</h2><p class="source-links"><a href="https://www.loteriasyapuestas.es/ca/centro-de-ayuda/como-se-juega/jugar-a-euromillones" target="_blank" rel="noopener">Com jugar a EuroMillions · Loteries i Apostes de l'Estat ↗</a><a href="https://www.loteriasyapuestas.es/es/euromillones/resultados" target="_blank" rel="noopener">Resultats oficials i escrutinis ↗</a><a href="https://www.lottery.ie/results/euromillions/history" target="_blank" rel="noopener">Arxiu històric · National Lottery Ireland ↗</a></p></div>
       </section>
       <footer class="footer"><span>EUROMILIONS AI · v1.0.0</span><span>Sense afiliació amb l'organitzador d'EuroMillions.</span><span>Juga responsablement · +18</span></footer>
     </main>
