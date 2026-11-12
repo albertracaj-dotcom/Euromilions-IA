@@ -53,19 +53,10 @@
         <div class="notice"><span>ⓘ</span><div><strong>Una qüestió important</strong><p>En un sorteig just, totes les combinacions tenen la mateixa probabilitat, independentment de les freqüències anteriors. Cap algoritme pot anticipar el resultat.</p></div></div>
       </section>
       <section class="view" id="view-generator">
-        <div class="panel generator-panel"><div class="panel-head"><div><div class="eyebrow">GENERACIÓ DE COMBINACIONS</div><h2>Construeix la teva combinació</h2><p>Tria un mètode. Tots generen combinacions amb la mateixa probabilitat teòrica.</p></div><span class="tag">5 + 2</span></div>
-          <div class="generator-options"><label class="field">Mètode<select id="method"><option value="random">Aleatori pur</option><option value="balanced">Equilibrat (parell/senar i rangs)</option><option value="historical">Basat en freqüències històriques</option><option value="cold">Menys freqüents a l'històric</option><option value="advanced">Avançat multicriteri</option></select></label><select id="quantity" hidden aria-hidden="true"><option selected>1</option></select></div>
-          <div id="advancedControls" class="advanced-controls" hidden>
-<div class="advanced-intro"><strong>Configura els criteris</strong><span>Valors de 0 (desactivat) a 5 (màxima influència). Només canvien el perfil de selecció, no les probabilitats del sorteig.</span></div>
-<div class="weight-grid">
-<label class="weight-control"><span>Freqüència històrica <b id="wFrequencyValue">3</b></span><input id="wFrequency" type="range" min="0" max="5" value="3"></label>
-<label class="weight-control"><span>Parelles i triples <b id="wPatternsValue">2</b></span><input id="wPatterns" type="range" min="0" max="5" value="2"></label>
-<label class="weight-control"><span>Absències <b id="wAbsenceValue">1</b></span><input id="wAbsence" type="range" min="0" max="5" value="1"></label>
-<label class="weight-control"><span>Equilibri i suma <b id="wBalanceValue">3</b></span><input id="wBalance" type="range" min="0" max="5" value="3"></label>
-<label class="weight-control"><span>Estrelles <b id="wStarsValue">2</b></span><input id="wStars" type="range" min="0" max="5" value="2"></label>
-</div><p class="small-muted" id="advancedDataNote">Els criteris històrics utilitzen les dades carregades a l'aplicació.</p></div><div class="check-row"><label><input type="checkbox" id="avoidRecent" checked> Evita repetir combinacions de l'històric importat</label><label><input type="checkbox" id="uniqueSet" checked> Evita duplicats en aquesta generació</label></div>
-          <button id="generateBtn" class="button button-primary">✳ Genera combinacions</button><div id="generated" class="generated-list"><div class="empty-state">Les teves combinacions apareixeran aquí.</div></div>
-          <div class="panel-foot"><button id="saveAllBtn" class="button button-ghost" disabled>Desa les combinacions</button><span id="generatorMessage" class="small-muted"></span></div>
+        <div class="panel generator-panel"><div class="panel-head"><div><div class="eyebrow">SELECCIÓ MATEMÀTICA</div><h2>Combinació estadística única</h2><p>El sistema aplica sempre els mateixos criteris estadístics i matemàtics, sense opcions manuals.</p></div><span class="tag">5 + 2</span></div>
+          <p class="small-muted">Criteris fixos: freqüències històriques, parelles i triples, absències, equilibri numèric i freqüència de les estrelles. La puntuació ordena dades passades; no augmenta la probabilitat real del sorteig.</p>
+          <button id="generateBtn" class="button button-primary">✳ Calcula la combinació</button><div id="generated" class="generated-list"><div class="empty-state">Les teves combinacions apareixeran aquí.</div></div>
+          <div class="panel-foot"><button id="saveAllBtn" class="button button-ghost" disabled>Desa la combinació</button><span id="generatorMessage" class="small-muted"></span></div>
         </div>
       </section>
       <section class="view" id="view-statistics">
@@ -136,6 +127,6 @@
   });
 })();
 </script>
-<script data-app-script src="app.js?v=14" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
+<script data-app-script src="app.js?v=15" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
 </body>
 </html>
