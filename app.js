@@ -31,10 +31,10 @@ function renderStats(){const ds=getStatsDraws();const {n,s}=counts(ds);$('#statD
 function rank(a,desc,limit=50){return a.slice(1,limit+1).map((v,i)=>({id:i+1,v})).sort((x,y)=>desc?y.v-x.v||x.id-y.id:x.v-y.v||x.id-y.id)}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function generate(){
- const method=$('#method').value,q=Number($('#quantity').value),{n,s}=counts(),recent=new Set(draws.map(d=>key(d))),seen=new Set(),out=[];
+ const method='advanced',q=1,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
  let attempts=0;
  if(method==='advanced'){
-  const weights={frequency:Number($('#wFrequency').value),patterns:Number($('#wPatterns').value),absence:Number($('#wAbsence').value),balance:Number($('#wBalance').value),stars:Number($('#wStars').value)};
+  const weights={frequency:3,patterns:2,absence:1,balance:3,stars:2};
   const pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
   draws.forEach(d=>{const a=d.numbers;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);for(let z=j+1;z<5;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}}const sk=d.stars.slice().sort((x,y)=>x-y).join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1)});
   const maxN=Math.max(1,...n.slice(1)),minN=Math.min(...n.slice(1)),maxS=Math.max(1,...s.slice(1)),minS=Math.min(...s.slice(1));
@@ -63,7 +63,7 @@ function generate(){
   }
   const total=weights.frequency+weights.patterns+weights.absence+weights.balance+weights.stars||1;
   let best=null;
-  for(const candidate of topNumbers){for(const star of starOptions){const combo={numbers:candidate.numbers,stars:star.stars};if($('#avoidRecent').checked&&recent.has(key(combo)))continue;const score=Math.round((candidate.score+star.score*weights.stars)/total*100);if(!best||score>best.score)best={...combo,score};break}if(best&&candidate.score+starOptions[0].score*weights.stars<best.score*total/100)break}
+  for(const candidate of topNumbers){for(const star of starOptions){const combo={numbers:candidate.numbers,stars:star.stars};const score=Math.round((candidate.score+star.score*weights.stars)/total*100);if(!best||score>best.score)best={...combo,score};break}if(best&&candidate.score+starOptions[0].score*weights.stars<best.score*total/100)break}
   if(best)out.push(best);
 
  }else{
@@ -71,15 +71,15 @@ function generate(){
  }
  lastGenerated=out;
  $('#generated').innerHTML=out.length?out.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(Number.isFinite(c.score)?'<span class="combo-score">Índex multicriteri: '+c.score+'/100</span>':'')+'<button class="icon-button" data-copy="'+i+'">Copia</button><button class="icon-button" data-save="'+i+'">Desa</button></div></div>').join(''):'<div class="empty-state">No s’han pogut generar combinacions amb aquests filtres. Desactiva alguna restricció.</div>';
- $('#saveAllBtn').disabled=!out.length;$('#generatorMessage').textContent=out.length+' combinacions generades'+(method==='advanced'?' · ordenades per puntuació multicriteri':'');
+ $('#saveAllBtn').disabled=!out.length;$('#generatorMessage').textContent=out.length?'Combinació seleccionada amb criteris estadístics fixos. La probabilitat real continua sent 1 entre 139.838.160.':'No s’ha pogut calcular la combinació.';
  $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
 }
 function weightedPick(freq,max,high){const pool=[];for(let i=1;i<=max;i++){const weight=Math.max(1,high?freq[i]+1:(draws.length*2-freq[i]+1));for(let j=0;j<Math.min(30,weight);j++)pool.push(i)}const out=[];while(out.length< (max===50?5:2)){const x=pool[Math.floor(Math.random()*pool.length)];if(!out.includes(x))out.push(x)}return out.sort((a,b)=>a-b)}
 function balancedPick(){let best=sample(50,5),score=999;for(let i=0;i<80;i++){const a=sample(50,5),ev=a.filter(x=>x%2===0).length,sum=a.reduce((x,y)=>x+y,0),bands=[0,0,0,0,0];a.forEach(x=>bands[Math.min(4,Math.floor((x-1)/10))]++);const sc=Math.abs(ev-2.5)*4+Math.abs(sum-127.5)/15+bands.filter(x=>x>0).length*-1; if(sc<score){score=sc;best=a}}return best}
 function copyCombo(c){const str=c.numbers.join(', ')+' ⭐ '+c.stars.join(', ');if(navigator.clipboard)navigator.clipboard.writeText(str).then(()=>$('#generatorMessage').textContent='Combinació copiada').catch(()=>$('#generatorMessage').textContent=str);else $('#generatorMessage').textContent=str}
 function saveCombo(c){if(!saved.some(x=>key(x)===key(c))){saved.push({...c,created:new Date().toISOString()});persist();updateDashboard();renderSaved()} }
-$('#method').addEventListener('change',()=>{$('#advancedControls').hidden=$('#method').value!=='advanced';});
-['Frequency','Patterns','Absence','Balance','Stars'].forEach(k=>{const input=$('#w'+k),value=$('#w'+k+'Value');if(input&&value)input.addEventListener('input',()=>value.textContent=input.value)});
+
+
 $('#generateBtn').addEventListener('click',generate);$('#saveAllBtn').addEventListener('click',()=>{lastGenerated.forEach(saveCombo);$('#generatorMessage').textContent='Combinacions desades';});
 function renderPrizes(){const tiers=[[5,2],[5,1],[5,0],[4,2],[4,1],[3,2],[4,0],[2,2],[3,1],[3,0],[1,2],[2,1],[2,0]];const rows=tiers.map(([n,s])=>{const ways=choose(5,n)*choose(45,5-n)*choose(2,s)*choose(10,2-s);return {n,s,ways,odds:TOTAL/ways}});$('#prizeTable').innerHTML=rows.map(r=>'<tr><td class="prize-name">'+r.n+' + '+r.s+'</td><td>'+r.n+'/5 números · '+r.s+'/2 estrelles</td><td>'+(100*r.ways/TOTAL).toLocaleString('ca-ES',{maximumFractionDigits:7})+'%</td><td class="odds-cell">1 entre '+Math.round(r.odds).toLocaleString('ca-ES')+'</td></tr>').join('')}
 function simulate(){const count=Number($('#simCount').value),start=performance.now(),hits=Array.from({length:6},()=>Array(3).fill(0));for(let i=0;i<count;i++){const a=sample(50,5),b=sample(12,2),x=sample(50,5),y=sample(12,2),n=a.filter(v=>x.includes(v)).length,s=b.filter(v=>y.includes(v)).length;hits[n][s]++}const prizes=[];[[5,2],[5,1],[5,0],[4,2],[4,1],[3,2],[4,0],[2,2],[3,1],[3,0],[1,2],[2,1],[2,0]].forEach(([n,s])=>{if(hits[n][s])prizes.push('<div class="sim-row"><span>'+n+' números + '+s+' estrelles</span><strong>'+hits[n][s].toLocaleString('ca-ES')+'</strong></div>')});$('#simResults').innerHTML='<div class="sim-summary"><div class="sim-stat"><span>Apostes simulades</span><strong>'+count.toLocaleString('ca-ES')+'</strong></div><div class="sim-stat"><span>Temps de càlcul</span><strong>'+((performance.now()-start)/1000).toFixed(2)+' s</strong></div><div class="sim-stat"><span>Premis observats</span><strong>'+prizes.length+'</strong></div></div><h3 style="font-size:13px">Resultats observats</h3>'+(prizes.join('')||'<div class="empty-state">Cap coincidència en aquesta simulació.</div>')}
