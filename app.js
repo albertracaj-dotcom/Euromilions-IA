@@ -31,7 +31,7 @@ function renderStats(){const ds=getStatsDraws();const {n,s}=counts(ds);$('#statD
 function rank(a,desc,limit=50){return a.slice(1,limit+1).map((v,i)=>({id:i+1,v})).sort((x,y)=>desc?y.v-x.v||x.id-y.id:x.v-y.v||x.id-y.id)}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function generate(){
- const method='advanced',q=1,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
+ const method='advanced',q=3,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
  let attempts=0;
  if(method==='advanced'){
   const weights={frequency:3,patterns:2,absence:1,balance:3,stars:2};
@@ -62,16 +62,29 @@ function generate(){
    else if(score>topNumbers[topNumbers.length-1].score){topNumbers[topNumbers.length-1]={numbers,score};topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
   }
   const total=weights.frequency+weights.patterns+weights.absence+weights.balance+weights.stars||1;
-  let best=null;
-  for(const candidate of topNumbers){for(const star of starOptions){const combo={numbers:candidate.numbers,stars:star.stars};const score=Math.round((candidate.score+star.score*weights.stars)/total*100);if(!best||score>best.score)best={...combo,score};break}if(best&&candidate.score+starOptions[0].score*weights.stars<best.score*total/100)break}
-  if(best)out.push(best);
+  const ranked=[];
+  for(const candidate of topNumbers){
+   for(const star of starOptions){
+    const rawScore=(candidate.score+star.score*weights.stars)/total;
+    ranked.push({numbers:candidate.numbers,stars:star.stars,score:Math.round(rawScore*100),rawScore});
+   }
+  }
+  ranked.sort((a,b)=>b.rawScore-a.rawScore||a.numbers.join('-').localeCompare(b.numbers.join('-'))||a.stars.join('-').localeCompare(b.stars.join('-')));
+  const unique=new Set();
+  for(const candidate of ranked){
+   const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
+   if(unique.has(comboKey))continue;
+   unique.add(comboKey);
+   out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
+   if(out.length===3)break;
+  }
 
  }else{
   while(out.length<q&&attempts<q*500){attempts++;let numbers,stars;if(method==='historical'&&draws.length){numbers=weightedPick(n,50,true);stars=weightedPick(s,12,true)}else if(method==='cold'&&draws.length){numbers=weightedPick(n,50,false);stars=weightedPick(s,12,false)}else if(method==='balanced'){numbers=balancedPick();stars=sample(12,2)}else{numbers=sample(50,5);stars=sample(12,2)}const c={numbers,stars},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);out.push(c)}
  }
  lastGenerated=out;
  $('#generated').innerHTML=out.length?out.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(Number.isFinite(c.score)?'<span class="combo-score">Índex multicriteri: '+c.score+'/100</span>':'')+'<button class="icon-button" data-copy="'+i+'">Copia</button><button class="icon-button" data-save="'+i+'">Desa</button></div></div>').join(''):'<div class="empty-state">No s’han pogut generar combinacions amb aquests filtres. Desactiva alguna restricció.</div>';
- $('#saveAllBtn').disabled=!out.length;$('#generatorMessage').textContent=out.length?'Combinació seleccionada amb criteris estadístics fixos. La probabilitat real continua sent 1 entre 139.838.160.':'No s’ha pogut calcular la combinació.';
+ $('#saveAllBtn').disabled=!out.length;$('#generatorMessage').textContent=out.length?'3 combinacions ordenades per la puntuació del model estadístic. Totes tenen la mateixa probabilitat real: 1 entre 139.838.160.':'No s’ha pogut calcular la combinació.';
  $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
 }
 function weightedPick(freq,max,high){const pool=[];for(let i=1;i<=max;i++){const weight=Math.max(1,high?freq[i]+1:(draws.length*2-freq[i]+1));for(let j=0;j<Math.min(30,weight);j++)pool.push(i)}const out=[];while(out.length< (max===50?5:2)){const x=pool[Math.floor(Math.random()*pool.length)];if(!out.includes(x))out.push(x)}return out.sort((a,b)=>a-b)}
