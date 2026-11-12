@@ -10,7 +10,7 @@ const draws = lines.map(line => {
   const [date, ...values] = line.split(',');
   const nums = values.map(Number);
   const numbers = nums.slice(0, 5), stars = nums.slice(5, 7);
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || numbers.length !== 5 || stars.length !== 2 || numbers.some(n => !Number.isInteger(n) || n < 1 || n > 50) || stars.some(n => !Number.isInteger(n) || n < 1 || n > 12) || new Set(numbers).size !== 5 || new Set(stars).size !== 2) throw new Error('Sorteig invàlid: ' + line);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || numbers.length !== 5 || stars.length !== 2 || numbers.some(n => !Number.isInteger(n) || n < 1 || n > 50) || stars.some(n => !Number.isInteger(n) || n < 1 || n > 12) || new Set(numbers).size !== 5 || new Set(stars).size !== 2) throw new Error('Sorteig invàlid: ' + line);
   return {date, numbers: numbers.sort((a,b)=>a-b), stars: stars.sort((a,b)=>a-b)};
 });
 if (draws.length < 1000) throw new Error('L’arxiu rebut sembla incomplet.');
