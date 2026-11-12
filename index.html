@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#081b35">
+  <meta name="description" content="EuroMilions AI: estadística, probabilitats exactes, simulació i generació responsable de combinacions.">
+  <title>EuroMilions AI</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="EuroMilions AI inici"><span class="brand-mark">€</span><span>EUROMILIONS <b>AI</b><small>ANÀLISI · ESTADÍSTICA · PROBABILITATS</small></span></a>
+    <div class="top-actions"><span class="live-dot"></span><span class="small-muted">Eina estadística independent</span><button id="installBtn" class="button button-ghost hidden">Instal·la l'app</button></div>
+  </header>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-label">ESPAI DE TREBALL</div>
+      <button class="nav-item active" data-view="dashboard"><span>▦</span> Visió general</button>
+      <button class="nav-item" data-view="generator"><span>✳</span> Generador</button>
+      <button class="nav-item" data-view="statistics"><span>▥</span> Estadístiques</button>
+      <button class="nav-item" data-view="probabilities"><span>◉</span> Probabilitats</button>
+      <button class="nav-item" data-view="simulator"><span>⌁</span> Simulador</button>
+      <button class="nav-item" data-view="history"><span>▤</span> Històric</button>
+      <div class="sidebar-note"><strong>Juga amb criteri.</strong><p>Les dades descriuen el passat. No prediuen el pròxim sorteig.</p></div>
+      <div class="side-footer">EUROMILIONS AI <span>v1.0.0</span></div>
+    </aside>
+    <main class="main">
+      <section class="page-heading"><div><div class="eyebrow">CENTRE D'ANÀLISI</div><h1 id="pageTitle">Visió general</h1><p id="pageSubtitle">Una lectura clara de les dades i de les probabilitats reals.</p></div><div class="date-chip" id="todayLabel">—</div></section>
+      <section class="view active" id="view-dashboard">
+        <div class="hero">
+          <div class="hero-copy"><span class="eyebrow light">EUROMILIONS · 5 NÚMEROS + 2 ESTRELLES</span><h2>La sort no es pot predir.<br><em>Les probabilitats, sí.</em></h2><p>Analitza resultats, explora patrons històrics i genera combinacions amb criteris transparents.</p><button class="button button-gold" data-go="generator">Genera combinacions <span>→</span></button></div>
+          <div class="hero-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="hero-ball ball-main">AI</div><div class="floating-ball fb1">7</div><div class="floating-ball fb2">23</div><div class="floating-ball fb3">⭐</div></div>
+        </div>
+        <div class="metric-grid">
+          <article class="metric-card"><span class="metric-label">COMBINACIONS POSSIBLES</span><strong>139.838.160</strong><small>5 de 50 + 2 de 12</small></article>
+          <article class="metric-card"><span class="metric-label">PROBABILITAT DEL POT</span><strong>1 entre 139,8 M</strong><small>Una combinació simple</small></article>
+          <article class="metric-card"><span class="metric-label">SORTEJOS IMPORTATS</span><strong id="drawCount">0</strong><small id="drawStatus">Encara no hi ha dades</small></article>
+          <article class="metric-card"><span class="metric-label">COMBINACIONS DESADES</span><strong id="savedCount">0</strong><small>Al dispositiu</small></article>
+        </div>
+        <div class="section-row"><div><div class="eyebrow">COMENÇA AQUÍ</div><h2>Eines principals</h2></div></div>
+        <div class="tool-grid">
+          <button class="tool-card" data-go="generator"><span class="tool-icon gold">✳</span><strong>Generador intel·ligent</strong><p>Crea combinacions aleatòries o equilibrades amb criteris configurables.</p><span class="card-link">Obrir generador →</span></button>
+          <button class="tool-card" data-go="statistics"><span class="tool-icon blue">▥</span><strong>Anàlisi estadística</strong><p>Freqüències, absències, distribució i parelles dels sortejos importats.</p><span class="card-link">Veure estadístiques →</span></button>
+          <button class="tool-card" data-go="probabilities"><span class="tool-icon purple">◉</span><strong>Probabilitats reals</strong><p>Consulta les opcions matemàtiques de cada categoria de premi.</p><span class="card-link">Consultar probabilitats →</span></button>
+          <button class="tool-card" data-go="history"><span class="tool-icon green">▤</span><strong>Històric de sortejos</strong><p>Importa un CSV o JSON i conserva les dades localment.</p><span class="card-link">Gestionar històric →</span></button>
+        </div>
+        <div class="notice"><span>ⓘ</span><div><strong>Una qüestió important</strong><p>En un sorteig just, totes les combinacions tenen la mateixa probabilitat, independentment de les freqüències anteriors. Cap algoritme pot anticipar el resultat.</p></div></div>
+      </section>
+      <section class="view" id="view-generator">
+        <div class="panel generator-panel"><div class="panel-head"><div><div class="eyebrow">GENERACIÓ DE COMBINACIONS</div><h2>Construeix la teva combinació</h2><p>Tria un mètode. Tots generen combinacions amb la mateixa probabilitat teòrica.</p></div><span class="tag">5 + 2</span></div>
+          <div class="generator-options"><label class="field">Mètode<select id="method"><option value="random">Aleatori pur</option><option value="balanced">Equilibrat (parell/senar i rangs)</option><option value="historical">Basat en freqüències històriques</option><option value="cold">Menys freqüents a l'històric</option></select></label><label class="field">Nombre de combinacions<select id="quantity"><option>1</option><option>3</option><option selected>5</option><option>10</option><option>20</option></select></label></div>
+          <div class="check-row"><label><input type="checkbox" id="avoidRecent" checked> Evita repetir combinacions de l'històric importat</label><label><input type="checkbox" id="uniqueSet" checked> Evita duplicats en aquesta generació</label></div>
+          <button id="generateBtn" class="button button-primary">✳ Genera combinacions</button><div id="generated" class="generated-list"><div class="empty-state">Les teves combinacions apareixeran aquí.</div></div>
+          <div class="panel-foot"><button id="saveAllBtn" class="button button-ghost" disabled>Desa les combinacions</button><span id="generatorMessage" class="small-muted"></span></div>
+        </div>
+      </section>
+      <section class="view" id="view-statistics">
+        <div class="metric-grid compact"><article class="metric-card"><span class="metric-label">SORTEJOS ANALITZATS</span><strong id="statDraws">0</strong></article><article class="metric-card"><span class="metric-label">NÚMERO MÉS FREQÜENT</span><strong id="hotNumber">—</strong></article><article class="metric-card"><span class="metric-label">NÚMERO MENYS FREQÜENT</span><strong id="coldNumber">—</strong></article><article class="metric-card"><span class="metric-label">ESTRELLA MÉS FREQÜENT</span><strong id="hotStar">—</strong></article></div>
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">FREQÜÈNCIA OBSERVADA</div><h2>Números principals</h2><p>Nombre d'aparicions en els sortejos importats.</p></div></div><div id="numberChart" class="bar-chart"></div></div>
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">FREQÜÈNCIA OBSERVADA</div><h2>Estrelles</h2></div></div><div id="starChart" class="bar-chart star-chart"></div></div>
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">DISTRIBUCIÓ</div><h2>Composició dels sortejos</h2></div></div><div id="distribution" class="distribution-grid"></div></div>
+        <p class="small-muted">Les freqüències són descriptives. Les diferències observades no impliquen que un número tingui més o menys opcions en el pròxim sorteig.</p>
+      </section>
+      <section class="view" id="view-probabilities">
+        <div class="probability-hero"><div><div class="eyebrow light">MATEMÀTICA DEL SORTEIG</div><h2>Quines opcions tens?</h2><p>Probabilitats teòriques d'una aposta simple: 5 números entre 50 i 2 estrelles entre 12.</p></div><div class="jackpot-odds"><strong>1 / 139.838.160</strong><span>Probabilitat d'encertar el pot</span></div></div>
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">13 CATEGORIES</div><h2>Probabilitat per categoria de premi</h2><p>Calculada combinatòriament, no estimada a partir de l'històric.</p></div></div><div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Encerts</th><th>Probabilitat</th><th>Opcions aproximades</th></tr></thead><tbody id="prizeTable"></tbody></table></div></div>
+        <div class="notice"><span>ⓘ</span><div><strong>Què vol dir «1 entre X»?</strong><p>És la mitjana matemàtica a llarg termini per a una aposta simple. No vol dir que el premi estigui garantit després de X apostes. Les probabilitats d'una combinació concreta són les mateixes que les de qualsevol altra.</p></div></div>
+      </section>
+      <section class="view" id="view-simulator">
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">SIMULACIÓ MONTE CARLO</div><h2>Experimenta amb els sortejos</h2><p>Simula apostes independents i observa com es distribueixen els encerts. No és una predicció.</p></div></div>
+          <div class="sim-controls"><label class="field">Nombre d'apostes a simular<select id="simCount"><option value="1000">1.000</option><option value="10000" selected>10.000</option><option value="100000">100.000</option><option value="500000">500.000</option></select></label><button id="simulateBtn" class="button button-primary">Executa simulació</button></div>
+          <div id="simResults" class="sim-results"><div class="empty-state">Executa una simulació per veure els resultats.</div></div>
+          <p class="small-muted">La simulació és una mostra aleatòria. Amb moltes apostes, els premis grans poden no aparèixer en absolut.</p>
+        </div>
+      </section>
+      <section class="view" id="view-history">
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">BASE DE DADES LOCAL</div><h2>Històric de sortejos</h2><p>Importa dades en CSV o JSON. Els fitxers es processen al navegador i queden guardats en aquest dispositiu.</p></div><span class="tag" id="historyTag">0 sortejos</span></div>
+          <div class="import-box"><div class="upload-symbol">↑</div><strong>Importa resultats</strong><p>CSV amb columnes data,n1,n2,n3,n4,n5,e1,e2 o JSON d'objectes amb aquests camps.</p><label class="button button-primary file-button">Selecciona fitxer<input id="fileInput" type="file" accept=".csv,.json,text/csv,application/json"></label><button id="sampleBtn" class="button button-ghost">Carrega dades de demostració</button></div>
+          <div class="panel-foot"><span id="importMessage" class="small-muted">Cap fitxer seleccionat.</span><button id="clearHistoryBtn" class="button button-danger-ghost">Esborra l'històric</button></div>
+          <div class="table-wrap history-table"><table><thead><tr><th>Data</th><th>Números</th><th>Estrelles</th></tr></thead><tbody id="historyRows"><tr><td colspan="3" class="empty-cell">Encara no hi ha sortejos importats.</td></tr></tbody></table></div>
+        </div>
+        <div class="panel"><div class="panel-head"><div><div class="eyebrow">LES TEVES COMBINACIONS</div><h2>Combinacions desades</h2></div><button id="exportSavedBtn" class="button button-ghost">Exporta JSON</button></div><div id="savedList" class="saved-list"><div class="empty-state">Encara no has desat cap combinació.</div></div></div>
+      </section>
+      <footer class="footer"><span>EUROMILIONS AI · v1.0.0</span><span>Sense afiliació amb l'organitzador d'EuroMillions.</span><span>Juga responsablement · +18</span></footer>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
