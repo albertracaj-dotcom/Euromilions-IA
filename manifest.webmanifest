@@ -1,0 +1,14 @@
+{
+  "name": "EuroMilions AI",
+  "short_name": "EuroMilions AI",
+  "description": "Estadística i probabilitats d'EuroMillions",
+  "lang": "ca",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#081b35",
+  "icons": [
+    {"src":"assets/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
