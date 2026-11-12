@@ -77,7 +77,7 @@ function generate(){
   const unique=new Set();
   for(const candidate of ranked){
    const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
-   if(unique.has(comboKey)||mathKeys.has(comboKey))continue;
+   if(unique.has(comboKey))continue;
    unique.add(comboKey);
    out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
    if(out.length===3)break;
