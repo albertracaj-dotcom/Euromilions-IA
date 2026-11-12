@@ -4,10 +4,10 @@ Aplicació web progressiva (PWA) en català per explorar estadístiques, probabi
 
 ## Contingut i funcionalitats
 
-- 9 resultats recents verificats, integrats al primer inici i disponibles offline.
+- Històric de 1.997 sortejos des del 13/02/2004 fins al 10/11/2026, importat d'un arxiu comunitari no oficial i disponible offline.
 - Enllaços directes a les fonts oficials de resultats i a l'arxiu històric.
 - Guia del joc en català: regles, cost publicat a Espanya, categories i glossari estadístic.
-- Les dades incorporades tenen data d'actualització i procedència identificada.
+- Les dades incorporades tenen data d'actualització i procedència identificada. Cal contrastar els resultats amb SELAE abans de qualsevol comprovació de premi.
 
 ## Funcionalitats
 
@@ -35,7 +35,7 @@ date,n1,n2,n3,n4,n5,e1,e2
 
 També s'admeten separadors punt i coma i tabuladors. JSON: una llista d'objectes amb `date`, `numbers` (5 valors) i `stars` (2 valors).
 
-L'històric inicial es carrega des de `data/results.json`. Inclou resultats publicats fins al 10/11/2026, consultats el 12/11/2026. La interfície identifica les fonts i permet consultar els resultats oficials. Aquest conjunt inicial no és una sincronització automàtica en temps real.
+L'històric inicial es carrega des de `data/results.json`. Conté 1.997 sortejos des del 13/02/2004 fins al 10/11/2026, importats de l'arxiu comunitari [LottoData](https://github.com/dev-baris/lottery-archive). Aquest arxiu no és oficial i pot contenir errors. Un flux de GitHub Actions intenta sincronitzar-lo cada dimarts i divendres a les 22:30 UTC. Verifica sempre els resultats a [SELAE](https://www.loteriasyapuestas.es/es/euromillones/resultados).
 
 ## Model matemàtic
 
