@@ -7,6 +7,9 @@ function load(k,f){try{return JSON.parse(localStorage.getItem(k))??f}catch{retur
 function persist(){localStorage.setItem(STORE.draws,JSON.stringify(draws));localStorage.setItem(STORE.saved,JSON.stringify(saved))}
 function choose(n,k){let x=1;for(let i=1;i<=k;i++)x=x*(n-i+1)/i;return Math.round(x)}
 function sample(max,count){const a=[];while(a.length<count){const n=1+Math.floor(Math.random()*max);if(!a.includes(n))a.push(n)}return a.sort((x,y)=>x-y)}
+function seededRandom(seed){let a=seed>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296}}
+function sampleWithRandom(max,count,rng){const a=[];while(a.length<count){const n=1+Math.floor(rng()*max);if(!a.includes(n))a.push(n)}return a.sort((x,y)=>x-y)}
+function stableSeed(value){let h=2166136261;for(let i=0;i<value.length;i++){h^=value.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function key(c){return c.numbers.join('-')+'|'+c.stars.join('-')}
 function validDraw(d){const nums=(d.numbers||[d.n1,d.n2,d.n3,d.n4,d.n5]).map(Number),stars=(d.stars||[d.e1,d.e2]).map(Number);return nums.length===5&&stars.length===2&&nums.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=50&&nums.indexOf(n)===i)&&stars.every((n,i)=>Number.isInteger(n)&&n>=1&&n<=12&&stars.indexOf(n)===i)}
 function normalizeDraw(d){return {date:String(d.date||d.data||'—'),numbers:(d.numbers||[d.n1,d.n2,d.n3,d.n4,d.n5]).map(Number).sort((a,b)=>a-b),stars:(d.stars||[d.e1,d.e2]).map(Number).sort((a,b)=>a-b)}}
@@ -32,7 +35,8 @@ function generate(){
  let attempts=0;
  if(method==='advanced'){
   const weights={frequency:Number($('#wFrequency').value),patterns:Number($('#wPatterns').value),absence:Number($('#wAbsence').value),balance:Number($('#wBalance').value),stars:Number($('#wStars').value)};
-  const candidates=[],limit=Math.max(2500,q*700),pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
+  const seedText=JSON.stringify({draws:draws.slice().sort((a,b)=>a.date.localeCompare(b.date)),weights}),rng=seededRandom(stableSeed(seedText));
+   const candidates=[],limit=30000,pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
   draws.forEach(d=>{const a=d.numbers;for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);for(let z=j+1;z<a.length;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}}const sk=d.stars.join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1)});
   const maxN=Math.max(1,...n.slice(1)),minN=Math.min(...n.slice(1)),maxS=Math.max(1,...s.slice(1)),minS=Math.min(...s.slice(1));
   const maxPair=Math.max(1,...pairCounts.values()),maxTriple=Math.max(1,...tripleCounts.values()),maxStarPair=Math.max(1,...starPairCounts.values());
@@ -50,7 +54,7 @@ function generate(){
    const raw=(freq*weights.frequency+pattern*weights.patterns+absence*weights.absence+balance*weights.balance+starScore*weights.stars)/total;
    return Math.round(raw*100);
   };
-  for(let i=0;i<limit;i++){const c={numbers:sample(50,5),stars:sample(12,2)},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);c.score=scoreCombo(c);candidates.push(c)}
+  for(let i=0;i<limit;i++){const c={numbers:sampleWithRandom(50,5,rng),stars:sampleWithRandom(12,2,rng)},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);c.score=scoreCombo(c);candidates.push(c)}
   candidates.sort((a,b)=>b.score-a.score||key(a).localeCompare(key(b)));
   const chosen=[];for(const c of candidates){if(chosen.length>=q)break;if(chosen.some(x=>x.numbers.filter(v=>c.numbers.includes(v)).length>=4&&x.stars.some(v=>c.stars.includes(v))))continue;chosen.push(c)}out.push(...chosen);
  }else{
