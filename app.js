@@ -35,28 +35,37 @@ function generate(){
  let attempts=0;
  if(method==='advanced'){
   const weights={frequency:Number($('#wFrequency').value),patterns:Number($('#wPatterns').value),absence:Number($('#wAbsence').value),balance:Number($('#wBalance').value),stars:Number($('#wStars').value)};
-  const seedText=JSON.stringify({draws:draws.slice().sort((a,b)=>a.date.localeCompare(b.date)),weights}),rng=seededRandom(stableSeed(seedText));
-   const candidates=[],limit=30000,pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
-  draws.forEach(d=>{const a=d.numbers;for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++){const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);for(let z=j+1;z<a.length;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}}const sk=d.stars.join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1)});
+  const pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
+  draws.forEach(d=>{const a=d.numbers;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);for(let z=j+1;z<5;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}}const sk=d.stars.slice().sort((x,y)=>x-y).join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1)});
   const maxN=Math.max(1,...n.slice(1)),minN=Math.min(...n.slice(1)),maxS=Math.max(1,...s.slice(1)),minS=Math.min(...s.slice(1));
   const maxPair=Math.max(1,...pairCounts.values()),maxTriple=Math.max(1,...tripleCounts.values()),maxStarPair=Math.max(1,...starPairCounts.values());
   const gaps=(max,isStar)=>{const last=Array(max+1).fill(-1);draws.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach((d,i)=>(isStar?d.stars:d.numbers).forEach(v=>last[v]=i));return last.slice(1).map(i=>i<0?draws.length:draws.length-1-i)};
   const gapN=gaps(50,false),gapS=gaps(12,true),maxGapN=Math.max(1,...gapN),maxGapS=Math.max(1,...gapS);
   const norm=(v,min,max)=>max===min?.5:(v-min)/(max-min);
-  const scoreCombo=c=>{
-   const freq=c.numbers.reduce((t,x)=>t+norm(n[x],minN,maxN),0)/5;
-   let pair=0,triple=0;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){pair+=(pairCounts.get(c.numbers[i]+'-'+c.numbers[j])||0)/maxPair;for(let z=j+1;z<5;z++)triple+=(tripleCounts.get(c.numbers[i]+'-'+c.numbers[j]+'-'+c.numbers[z])||0)/maxTriple}
-   const pattern=(pair/10+triple/10)/2,absence=c.numbers.reduce((t,x)=>t+gapN[x]/maxGapN,0)/5;
-   const evens=c.numbers.filter(x=>x%2===0).length,sum=c.numbers.reduce((a,b)=>a+b,0),bands=new Set(c.numbers.map(x=>Math.floor((x-1)/10))).size;
+  const pairTable=new Uint16Array(51*51),tripleTable=new Uint16Array(51*51*51);
+  for(const [k,v] of pairCounts){const [a,b]=k.split('-').map(Number);pairTable[a*51+b]=v}
+  for(const [k,v] of tripleCounts){const [a,b,c]=k.split('-').map(Number);tripleTable[(a*51+b)*51+c]=v}
+  const numberScore=c=>{
+   const freq=c.reduce((t,x)=>t+norm(n[x],minN,maxN),0)/5;
+   let pair=0,triple=0;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){pair+=pairTable[c[i]*51+c[j]]/maxPair;for(let z=j+1;z<5;z++)triple+=tripleTable[(c[i]*51+c[j])*51+c[z]]/maxTriple}
+   const pattern=(pair/10+triple/10)/2,absence=c.reduce((t,x)=>t+gapN[x-1]/maxGapN,0)/5;
+   const evens=c.filter(x=>x%2===0).length,sum=c.reduce((a,b)=>a+b,0),bands=new Set(c.map(x=>Math.floor((x-1)/10))).size;
    const balance=Math.max(0,1-Math.abs(evens-2.5)/2.5)*.35+Math.max(0,1-Math.abs(sum-127.5)/127.5)*.35+(bands/5)*.3;
-   const starFreq=c.stars.reduce((t,x)=>t+norm(s[x],minS,maxS),0)/2,starPattern=(starPairCounts.get(c.stars.join('-'))||0)/maxStarPair,starScore=(starFreq+starPattern)/2;
-   const total=weights.frequency+weights.patterns+weights.absence+weights.balance+weights.stars||1;
-   const raw=(freq*weights.frequency+pattern*weights.patterns+absence*weights.absence+balance*weights.balance+starScore*weights.stars)/total;
-   return Math.round(raw*100);
+   return freq*weights.frequency+pattern*weights.patterns+absence*weights.absence+balance*weights.balance;
   };
-  for(let i=0;i<limit;i++){const c={numbers:sampleWithRandom(50,5,rng),stars:sampleWithRandom(12,2,rng)},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);c.score=scoreCombo(c);candidates.push(c)}
-  candidates.sort((a,b)=>b.score-a.score||key(a).localeCompare(key(b)));
-  const chosen=[];for(const c of candidates){if(chosen.length>=q)break;if(chosen.some(x=>x.numbers.filter(v=>c.numbers.includes(v)).length>=4&&x.stars.some(v=>c.stars.includes(v))))continue;chosen.push(c)}out.push(...chosen);
+  const starOptions=[];for(let a=1;a<=12;a++)for(let b=a+1;b<=12;b++){const freq=(norm(s[a],minS,maxS)+norm(s[b],minS,maxS))/2,pattern=(starPairCounts.get(a+'-'+b)||0)/maxStarPair;starOptions.push({stars:[a,b],score:(freq+pattern)/2})}
+  starOptions.sort((a,b)=>b.score-a.score||a.stars[0]-b.stars[0]||a.stars[1]-b.stars[1]);
+  const topNumbers=[];const keepTop=100;
+  for(let a=1;a<=46;a++)for(let b=a+1;b<=47;b++)for(let c=b+1;c<=48;c++)for(let d=c+1;d<=49;d++)for(let e=d+1;e<=50;e++){
+   const numbers=[a,b,c,d,e],score=numberScore(numbers);
+   if(topNumbers.length<keepTop){topNumbers.push({numbers,score});if(topNumbers.length===keepTop)topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
+   else if(score>topNumbers[topNumbers.length-1].score){topNumbers[topNumbers.length-1]={numbers,score};topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
+  }
+  const total=weights.frequency+weights.patterns+weights.absence+weights.balance+weights.stars||1;
+  let best=null;
+  for(const candidate of topNumbers){for(const star of starOptions){const combo={numbers:candidate.numbers,stars:star.stars};if($('#avoidRecent').checked&&recent.has(key(combo)))continue;const score=Math.round((candidate.score+star.score*weights.stars)/total*100);if(!best||score>best.score)best={...combo,score};break}if(best&&candidate.score+starOptions[0].score*weights.stars<best.score*total/100)break}
+  if(best)out.push(best);
+
  }else{
   while(out.length<q&&attempts<q*500){attempts++;let numbers,stars;if(method==='historical'&&draws.length){numbers=weightedPick(n,50,true);stars=weightedPick(s,12,true)}else if(method==='cold'&&draws.length){numbers=weightedPick(n,50,false);stars=weightedPick(s,12,false)}else if(method==='balanced'){numbers=balancedPick();stars=sample(12,2)}else{numbers=sample(50,5);stars=sample(12,2)}const c={numbers,stars},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);out.push(c)}
  }
