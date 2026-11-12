@@ -15,6 +15,8 @@ Aplicació web progressiva (PWA) en català per explorar estadístiques, probabi
 - Generador de combinacions aleatòries, equilibrades i basades en freqüències històriques.
 - Estadístiques de freqüències i distribució de números i estrelles.
 - Anàlisi de les parelles i triples de números més repetides.
+- Filtres estadístics per als últims 50, 100, 250, 500 sortejos o tot l'històric.
+- Rànquing dels números i estrelles amb més sortejos d'absència dins del període seleccionat.
 - Càlcul combinatori de les 13 categories de premi.
 - Simulador Monte Carlo de sortejos independents.
 - Comprovador d'apostes contra tot l'històric disponible.
