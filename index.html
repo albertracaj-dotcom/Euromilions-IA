@@ -54,7 +54,7 @@
       </section>
       <section class="view" id="view-generator">
         <div class="panel generator-panel"><div class="panel-head"><div><div class="eyebrow">GENERACIÓ DE COMBINACIONS</div><h2>Construeix la teva combinació</h2><p>Tria un mètode. Tots generen combinacions amb la mateixa probabilitat teòrica.</p></div><span class="tag">5 + 2</span></div>
-          <div class="generator-options"><label class="field">Mètode<select id="method"><option value="random">Aleatori pur</option><option value="balanced">Equilibrat (parell/senar i rangs)</option><option value="historical">Basat en freqüències històriques</option><option value="cold">Menys freqüents a l'històric</option><option value="advanced">Avançat multicriteri</option></select></label><label class="field">Nombre de combinacions<select id="quantity"><option>1</option><option>3</option><option selected>5</option><option>10</option><option>20</option></select></label></div>
+          <div class="generator-options"><label class="field">Mètode<select id="method"><option value="random">Aleatori pur</option><option value="balanced">Equilibrat (parell/senar i rangs)</option><option value="historical">Basat en freqüències històriques</option><option value="cold">Menys freqüents a l'històric</option><option value="advanced">Avançat multicriteri</option></select></label><select id="quantity" hidden aria-hidden="true"><option selected>1</option></select></div>
           <div id="advancedControls" class="advanced-controls" hidden>
 <div class="advanced-intro"><strong>Configura els criteris</strong><span>Valors de 0 (desactivat) a 5 (màxima influència). Només canvien el perfil de selecció, no les probabilitats del sorteig.</span></div>
 <div class="weight-grid">
@@ -136,6 +136,6 @@
   });
 })();
 </script>
-<script data-app-script src="app.js?v=11" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
+<script data-app-script src="app.js?v=12" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
 </body>
 </html>
