@@ -31,10 +31,30 @@ function renderStats(){const ds=getStatsDraws();const {n,s}=counts(ds);$('#statD
 function rank(a,desc,limit=50){return a.slice(1,limit+1).map((v,i)=>({id:i+1,v})).sort((x,y)=>desc?y.v-x.v||x.id-y.id:x.v-y.v||x.id-y.id)}
 function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
 function nextDrawDate(){const d=new Date();d.setHours(12,0,0,0);do{d.setDate(d.getDate()+1)}while(d.getDay()!==2&&d.getDay()!==5);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function secureSample(max,count){
+ const pool=Array.from({length:max},(_,i)=>i+1);
+ for(let i=0;i<count;i++){
+  let j;
+  if(globalThis.crypto&&crypto.getRandomValues){
+   const range=4294967296,limit=Math.floor(range/(max-i))*(max-i);let x;
+   do{const buf=new Uint32Array(1);crypto.getRandomValues(buf);x=buf[0]}while(x>=limit);
+   j=i+(x%(max-i));
+  }else j=i+Math.floor(Math.random()*(max-i));
+  [pool[i],pool[j]]=[pool[j],pool[i]];
+ }
+ return pool.slice(0,count).sort((x,y)=>x-y);
+}
+function getOfficialStyleCombos(drawDate){
+ const storageKey='euroai_official_draw_style_'+drawDate;
+ try{const cached=JSON.parse(localStorage.getItem(storageKey)||'null');if(Array.isArray(cached)&&cached.length===3&&cached.every(validDraw))return cached}catch{}
+ const combos=[];
+ while(combos.length<3){const c={date:drawDate,numbers:secureSample(50,5),stars:secureSample(12,2)};if(!combos.some(x=>key(x)===key(c)))combos.push(c)}
+ try{localStorage.setItem(storageKey,JSON.stringify(combos))}catch{}
+ return combos;
+}
 function generate(){
  const method='advanced',q=3,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
- const drawDate=nextDrawDate(),mathRng=seededRandom(stableSeed('euromillions-neutral-'+drawDate)),mathCombos=[];
- while(mathCombos.length<3){const c={numbers:sampleWithRandom(50,5,mathRng),stars:sampleWithRandom(12,2,mathRng)};if(!mathCombos.some(x=>key(x)===key(c)))mathCombos.push(c)}
+ const drawDate=nextDrawDate(),mathCombos=getOfficialStyleCombos(drawDate);
  const mathKeys=new Set(mathCombos.map(key));
  let attempts=0;
  if(method==='advanced'){
@@ -88,7 +108,7 @@ function generate(){
  }
  lastGenerated=[...mathCombos,...out];
  const renderGroup=(items,offset,model)=>items.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(model?'<span class="combo-score">Índex del model: '+c.score+'/100</span>':'<span class="combo-score">Equiprobable</span>')+'<button class="icon-button" data-copy="'+(offset+i)+'">Copia</button><button class="icon-button" data-save="'+(offset+i)+'">Desa</button></div></div>').join('');
- $('#generated').innerHTML='<section class="generated-group"><div class="generated-group-head"><h3>1. Selecció matemàtica neutral</h3><p>3 combinacions equiprobables, fixades per al sorteig del '+formatDrawDate(drawDate)+'. No existeix un rànquing matemàtic: totes tenen exactament les mateixes opcions.</p></div>'+renderGroup(mathCombos,0,false)+'</section><section class="generated-group"><div class="generated-group-head"><h3>2. Les 3 millor puntuades pel model</h3><p>Ordenades segons freqüències, parelles i triples, absències, equilibri numèric i estrelles de l’històric carregat. És una puntuació heurística, no una probabilitat de guanyar.</p></div>'+(out.length?renderGroup(out,3,true):'<div class="empty-state">No s’han pogut calcular les combinacions del model.</div>')+'</section>';
+ $('#generated').innerHTML='<section class="generated-group"><div class="generated-group-head"><h3>1. Simulació del sorteig oficial</h3><p>3 combinacions generades amb extracció uniforme sense reemplaçament (50 boles → 5; 12 boles → 2), com en el procediment oficial. Fixades en aquest dispositiu per al sorteig del '+formatDrawDate(drawDate)+'. No existeix un rànquing matemàtic: totes tenen exactament les mateixes opcions.</p></div>'+renderGroup(mathCombos,0,false)+'</section><section class="generated-group"><div class="generated-group-head"><h3>2. Les 3 millor puntuades pel model</h3><p>Ordenades segons freqüències, parelles i triples, absències, equilibri numèric i estrelles de l’històric carregat. És una puntuació heurística, no una probabilitat de guanyar.</p></div>'+(out.length?renderGroup(out,3,true):'<div class="empty-state">No s’han pogut calcular les combinacions del model.</div>')+'</section>';
  $('#saveAllBtn').disabled=!lastGenerated.length;$('#generatorMessage').textContent='6 combinacions preparades per al sorteig del '+formatDrawDate(drawDate)+'. Les 6 tenen la mateixa probabilitat real: 1 entre 139.838.160 cadascuna.';
  $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
 }
