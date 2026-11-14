@@ -25,3 +25,7 @@
 
 /* Dues famílies de combinacions del generador */
 .generated-group{display:grid;gap:10px;margin-bottom:18px}.generated-group:last-child{margin-bottom:0}.generated-group-head{padding:13px 15px;background:#f7f9fc;border:1px solid var(--line);border-radius:9px}.generated-group-head h3{font:800 13px Manrope;color:#183c61;margin:0 0 5px}.generated-group-head p{font-size:11px;line-height:1.55;color:var(--muted);margin:0}
+
+/* Backtesting cronològic */
+.backtest-results{display:grid;gap:12px;margin-top:16px}.backtest-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.backtest-table{display:grid;border:1px solid var(--line);border-radius:9px;overflow:hidden}.backtest-row{display:grid;grid-template-columns:minmax(0,1.8fr) repeat(3,minmax(55px,1fr));gap:8px;padding:11px 12px;border-bottom:1px solid var(--line);font-size:11px;align-items:center}.backtest-row:last-child{border-bottom:0}.backtest-row strong{text-align:right;font-variant-numeric:tabular-nums}.backtest-head{background:#f7f9fc;color:var(--muted);font-weight:800}.backtest-head strong{color:var(--ink)}
+@media(max-width:560px){.backtest-row{grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(48px,1fr));font-size:10px;padding:9px 7px}}
