@@ -105,6 +105,42 @@ $('#simulateBtn').addEventListener('click',simulate);
 function checkTicket(){const parse=id=>$(id).value.split(/[ ,;]+/).filter(Boolean).map(Number);const numbers=parse('#checkNumbers'),stars=parse('#checkStars');const msg=$('#checkMessage'),panel=$('#checkResults');if(numbers.length!==5||stars.length!==2||numbers.some(n=>!Number.isInteger(n)||n<1||n>50)||stars.some(n=>!Number.isInteger(n)||n<1||n>12)||new Set(numbers).size!==5||new Set(stars).size!==2){msg.textContent='Introdueix exactament 5 números diferents (1–50) i 2 estrelles diferents (1–12).';panel.hidden=true;return}if(!draws.length){msg.textContent='Encara no hi ha cap històric carregat.';panel.hidden=true;return}const nset=new Set(numbers),sset=new Set(stars);const matches=draws.map(d=>({date:d.date,n:d.numbers.filter(x=>nset.has(x)).length,s:d.stars.filter(x=>sset.has(x)).length}));const tiers=[[5,2],[5,1],[5,0],[4,2],[4,1],[3,2],[4,0],[2,2],[3,1],[3,0],[1,2],[2,1],[2,0]];const counts=tiers.map(([n,s])=>({n,s,count:matches.filter(m=>m.n===n&&m.s===s).length}));const total=counts.reduce((a,b)=>a+b.count,0);$('#checkSummary').textContent='Coincidències en '+draws.length.toLocaleString('ca-ES')+' sortejos';$('#checkBreakdown').innerHTML=counts.filter(x=>x.count).map(x=>'<div class="pattern-row"><span>'+x.n+' números + '+x.s+' estrelles</span><strong>'+x.count+' vegades</strong></div>').join('')||'<p class="small-muted">Cap coincidència en les 13 categories de premi de l’històric consultat.</p>';const best=matches.filter(m=>m.n||m.s).sort((a,b)=>(b.n+b.s)-(a.n+a.s)||b.n-a.n||b.s-a.s||b.date.localeCompare(a.date)).slice(0,10);$('#checkDraws').innerHTML=best.map(m=>'<div class="pattern-row"><span>'+escapeHtml(formatDrawDate(m.date))+'</span><strong>'+m.n+' números · '+m.s+' estrelles</strong></div>').join('')||'<p class="small-muted">Cap número o estrella coincident.</p>';msg.textContent='Comprovació retrospectiva finalitzada. No representa un premi actual ni un càlcul de guanys.';panel.hidden=false}
 $('#checkBtn').addEventListener('click',checkTicket);
 $('#statsPeriod').addEventListener('change',e=>{statsPeriod=Number(e.target.value);renderStats()});
+
+// Backtesting cronològic sense fuga d'informació: cada predicció només veu sortejos anteriors.
+function runBacktest(){
+ const ordered=draws.slice().filter(validDraw).sort((x,y)=>x.date.localeCompare(y.date));
+ const folds=Math.min(200,Math.max(0,ordered.length-200)),start=ordered.length-folds;
+ if(folds<30){$('#backtestResults').innerHTML='<div class="empty-state">Calen almenys 230 sortejos vàlids per fer una prova útil.</div>';return}
+ const totals={modelN:0,randomN:0,modelS:0,randomS:0,modelAny:0,randomAny:0,modelTicketN:0,randomTicketN:0,modelTicketS:0,randomTicketS:0};
+ const rngFor=seed=>seededRandom(seed);
+ for(let i=start;i<ordered.length;i++){
+  const train=ordered.slice(0,i),target=ordered[i],{n,s}=counts(train),pairs=new Map(),starPairs=new Map();
+  train.forEach(d=>{for(let x=0;x<5;x++)for(let y=x+1;y<5;y++){const k=d.numbers[x]+'-'+d.numbers[y];pairs.set(k,(pairs.get(k)||0)+1)}const sk=d.stars.join('-');starPairs.set(sk,(starPairs.get(sk)||0)+1)});
+  const maxN=Math.max(1,...n.slice(1)),minN=Math.min(...n.slice(1)),maxP=Math.max(1,...pairs.values()),maxS=Math.max(1,...s.slice(1)),minS=Math.min(...s.slice(1)),maxSP=Math.max(1,...starPairs.values());
+  const norm=(v,lo,hi)=>hi===lo?.5:(v-lo)/(hi-lo);
+  const seed=stableSeed('euromillions-backtest-'+target.date),rng=rngFor(seed),candidateMap=new Map();
+  // Candidate pool fixed by target date; model and baseline use independent deterministic streams.
+  const candidateRng=rngFor(seed^0x9e3779b9);
+  for(let k=0;k<1800;k++){const numbers=sampleWithRandom(50,5,candidateRng),keyN=numbers.join('-');if(candidateMap.has(keyN))continue;
+   let f=0,p=0;for(let x=0;x<5;x++){f+=norm(n[numbers[x]],minN,maxN);for(let y=x+1;y<5;y++)p+=((pairs.get(numbers[x]+'-'+numbers[y])||0)/maxP)}
+   const score=(f/5)*.55+(p/10)*.45;candidateMap.set(keyN,{numbers,score});
+  }
+  const topNumbers=[...candidateMap.values()].sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-'))).slice(0,30);
+  const stars=[];for(let x=1;x<=12;x++)for(let y=x+1;y<=12;y++){const f=(norm(s[x],minS,maxS)+norm(s[y],minS,maxS))/2,p=(starPairs.get(x+'-'+y)||0)/maxSP;stars.push({stars:[x,y],score:f*.6+p*.4})}
+  stars.sort((x,y)=>y.score-x.score||x.stars[0]-y.stars[0]||x.stars[1]-y.stars[1]);
+  const predicted=[];for(const nn of topNumbers.slice(0,12))for(const ss of stars.slice(0,12))predicted.push({numbers:nn.numbers,stars:ss.stars,score:nn.score+ss.score});
+  predicted.sort((x,y)=>y.score-x.score);const model=predicted.slice(0,3);
+  const randomRng=rngFor(seed^0x85ebca6b),random=[];while(random.length<3){const x={numbers:sampleWithRandom(50,5,randomRng),stars:sampleWithRandom(12,2,randomRng)};if(!random.some(z=>key(z)===key(x)))random.push(x)}
+  const scoreSet=(set,prefix)=>{for(const ticket of set){const nm=ticket.numbers.filter(x=>target.numbers.includes(x)).length,sm=ticket.stars.filter(x=>target.stars.includes(x)).length;totals[prefix+'N']+=nm;totals[prefix+'S']+=sm;if(nm>0)totals[prefix+'Any']++;}};
+  scoreSet(model,'model');scoreSet(random,'random');
+ }
+ const tickets=folds*3,modelN=totals.modelN/tickets,randomN=totals.randomN/tickets,modelS=totals.modelS/tickets,randomS=totals.randomS/tickets,modelAny=100*totals.modelAny/tickets,randomAny=100*totals.randomAny/tickets;
+ const deltaN=modelN-randomN,deltaS=modelS-randomS,deltaAny=modelAny-randomAny;
+ const verdict=deltaN>0.015||deltaS>0.015?'Avantatge observat en aquesta mostra; cal confirmar-lo amb més dades.':deltaN<-.015||deltaS<-.015?'El model queda per sota de l’atzar en aquesta prova.':'No s’observa cap avantatge pràctic respecte de l’atzar.';
+ $('#backtestResults').innerHTML='<div class="backtest-summary"><div class="distribution-card"><span>Sortejos de prova</span><strong>'+folds+'</strong></div><div class="distribution-card"><span>Apostes avaluades</span><strong>'+tickets*2+'</strong></div></div><div class="backtest-table"><div class="backtest-row backtest-head"><span>Mètrica per aposta</span><strong>Model</strong><strong>Atzar</strong><strong>Diferència</strong></div><div class="backtest-row"><span>Mitjana números encertats</span><strong>'+modelN.toFixed(3)+'</strong><strong>'+randomN.toFixed(3)+'</strong><strong>'+((deltaN>=0?'+':'')+deltaN.toFixed(3))+'</strong></div><div class="backtest-row"><span>Mitjana estrelles encertades</span><strong>'+modelS.toFixed(3)+'</strong><strong>'+randomS.toFixed(3)+'</strong><strong>'+((deltaS>=0?'+':'')+deltaS.toFixed(3))+'</strong></div><div class="backtest-row"><span>Apostes amb ≥1 número</span><strong>'+modelAny.toFixed(1)+'%</strong><strong>'+randomAny.toFixed(1)+'%</strong><strong>'+((deltaAny>=0?'+':'')+deltaAny.toFixed(1))+' pp</strong></div></div><div class="notice"><span>ⓘ</span><div><strong>'+verdict+'</strong><p>Prediccions construïdes només amb l’històric anterior a cada sorteig. La selecció del model és una aproximació amb 1.800 candidats per sorteig; no s’ha d’interpretar com una probabilitat futura.</p></div></div>';
+}
+$('#backtestBtn').addEventListener('click',runBacktest);
+
 function renderHistory(){updateDashboard();$('#historyRows').innerHTML=draws.length?draws.slice().reverse().map(d=>'<tr><td>'+escapeHtml(d.date)+'</td><td>'+d.numbers.join(' · ')+'</td><td>⭐ '+d.stars.join(' · ')+'</td></tr>').join(''):'<tr><td colspan="3" class="empty-cell">Encara no hi ha sortejos importats.</td></tr>';renderSaved()}
 function renderSaved(){$('#savedList').innerHTML=saved.length?saved.map((c,i)=>'<div class="saved-item"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+' '+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><button class="icon-button" data-remove="'+i+'">Elimina</button></div>').join(''):'<div class="empty-state">Encara no has desat cap combinació.</div>';$$('[data-remove]').forEach(b=>b.onclick=()=>{saved.splice(+b.dataset.remove,1);persist();renderSaved();updateDashboard()})}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
