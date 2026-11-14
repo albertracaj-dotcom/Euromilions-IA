@@ -53,64 +53,69 @@ function getOfficialStyleCombos(drawDate){
  return combos;
 }
 function generate(){
- const method='advanced',q=3,{n,s}=counts(),recent=new Set(),seen=new Set(),out=[];
- const drawDate=nextDrawDate(),mathCombos=getOfficialStyleCombos(drawDate);
- const mathKeys=new Set(mathCombos.map(key));
- let attempts=0;
- if(method==='advanced'){
-  const weights={frequency:3,patterns:2,absence:1,balance:3,stars:2};
-  const pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
-  draws.forEach(d=>{const a=d.numbers;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);for(let z=j+1;z<5;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}}const sk=d.stars.slice().sort((x,y)=>x-y).join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1)});
-  const maxN=Math.max(1,...n.slice(1)),minN=Math.min(...n.slice(1)),maxS=Math.max(1,...s.slice(1)),minS=Math.min(...s.slice(1));
-  const maxPair=Math.max(1,...pairCounts.values()),maxTriple=Math.max(1,...tripleCounts.values()),maxStarPair=Math.max(1,...starPairCounts.values());
-  const gaps=(max,isStar)=>{const last=Array(max+1).fill(-1);draws.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach((d,i)=>(isStar?d.stars:d.numbers).forEach(v=>last[v]=i));return last.slice(1).map(i=>i<0?draws.length:draws.length-1-i)};
-  const gapN=gaps(50,false),gapS=gaps(12,true),maxGapN=Math.max(1,...gapN),maxGapS=Math.max(1,...gapS);
-  const norm=(v,min,max)=>max===min?.5:(v-min)/(max-min);
-  const pairTable=new Uint16Array(51*51),tripleTable=new Uint16Array(51*51*51);
-  for(const [k,v] of pairCounts){const [a,b]=k.split('-').map(Number);pairTable[a*51+b]=v}
-  for(const [k,v] of tripleCounts){const [a,b,c]=k.split('-').map(Number);tripleTable[(a*51+b)*51+c]=v}
-  const numberScore=c=>{
-   const freq=c.reduce((t,x)=>t+norm(n[x],minN,maxN),0)/5;
-   let pair=0,triple=0;for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){pair+=pairTable[c[i]*51+c[j]]/maxPair;for(let z=j+1;z<5;z++)triple+=tripleTable[(c[i]*51+c[j])*51+c[z]]/maxTriple}
-   const pattern=(pair/10+triple/10)/2,absence=c.reduce((t,x)=>t+gapN[x-1]/maxGapN,0)/5;
-   const evens=c.filter(x=>x%2===0).length,sum=c.reduce((a,b)=>a+b,0),bands=new Set(c.map(x=>Math.floor((x-1)/10))).size;
-   const balance=Math.max(0,1-Math.abs(evens-2.5)/2.5)*.35+Math.max(0,1-Math.abs(sum-127.5)/127.5)*.35+(bands/5)*.3;
-   return freq*weights.frequency+pattern*weights.patterns+absence*weights.absence+balance*weights.balance;
-  };
-  const starOptions=[];for(let a=1;a<=12;a++)for(let b=a+1;b<=12;b++){const freq=(norm(s[a],minS,maxS)+norm(s[b],minS,maxS))/2,pattern=(starPairCounts.get(a+'-'+b)||0)/maxStarPair;starOptions.push({stars:[a,b],score:(freq+pattern)/2})}
-  starOptions.sort((a,b)=>b.score-a.score||a.stars[0]-b.stars[0]||a.stars[1]-b.stars[1]);
-  const topNumbers=[];const keepTop=100;
-  for(let a=1;a<=46;a++)for(let b=a+1;b<=47;b++)for(let c=b+1;c<=48;c++)for(let d=c+1;d<=49;d++)for(let e=d+1;e<=50;e++){
-   const numbers=[a,b,c,d,e],score=numberScore(numbers);
-   if(topNumbers.length<keepTop){topNumbers.push({numbers,score});if(topNumbers.length===keepTop)topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
-   else if(score>topNumbers[topNumbers.length-1].score){topNumbers[topNumbers.length-1]={numbers,score};topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
+ const {n,s}=counts(),out=[];
+ const drawDate=nextDrawDate();
+ const source=draws.slice().sort((a,b)=>a.date.localeCompare(b.date));
+ const pairCounts=new Map(),tripleCounts=new Map(),starPairCounts=new Map();
+ source.forEach(d=>{
+  const a=d.numbers;
+  for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){
+   const k=a[i]+'-'+a[j];pairCounts.set(k,(pairCounts.get(k)||0)+1);
+   for(let z=j+1;z<5;z++){const t=k+'-'+a[z];tripleCounts.set(t,(tripleCounts.get(t)||0)+1)}
   }
-  const total=weights.frequency+weights.patterns+weights.absence+weights.balance+weights.stars||1;
-  const ranked=[];
-  for(const candidate of topNumbers){
-   for(const star of starOptions){
-    const rawScore=(candidate.score+star.score*weights.stars)/total;
-    ranked.push({numbers:candidate.numbers,stars:star.stars,score:Math.round(rawScore*100),rawScore});
-   }
+  const sk=d.stars.slice().sort((x,y)=>x-y).join('-');starPairCounts.set(sk,(starPairCounts.get(sk)||0)+1);
+ });
+ const maxN=Math.max(1,...n.slice(1)),minN=Math.min(0,...n.slice(1));
+ const maxS=Math.max(1,...s.slice(1)),minS=Math.min(0,...s.slice(1));
+ const maxPair=Math.max(1,...pairCounts.values()),maxTriple=Math.max(1,...tripleCounts.values()),maxStarPair=Math.max(1,...starPairCounts.values());
+ const norm=(v,min,max)=>max===min?.5:(v-min)/(max-min);
+ const pairTable=new Uint16Array(51*51),tripleTable=new Uint16Array(51*51*51);
+ for(const [k,v] of pairCounts){const [a,b]=k.split('-').map(Number);pairTable[a*51+b]=v}
+ for(const [k,v] of tripleCounts){const [a,b,c]=k.split('-').map(Number);tripleTable[(a*51+b)*51+c]=v}
+ const numberScore=c=>{
+  const freq=c.reduce((t,x)=>t+norm(n[x],minN,maxN),0)/5;
+  let pair=0,triple=0;
+  for(let i=0;i<5;i++)for(let j=i+1;j<5;j++){
+   pair+=pairTable[c[i]*51+c[j]]/maxPair;
+   for(let z=j+1;z<5;z++)triple+=tripleTable[(c[i]*51+c[j])*51+c[z]]/maxTriple;
   }
-  ranked.sort((a,b)=>b.rawScore-a.rawScore||a.numbers.join('-').localeCompare(b.numbers.join('-'))||a.stars.join('-').localeCompare(b.stars.join('-')));
-  const unique=new Set();
-  for(const candidate of ranked){
-   const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
-   if(unique.has(comboKey))continue;
-   unique.add(comboKey);
-   out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
-   if(out.length===3)break;
-  }
-
- }else{
-  while(out.length<q&&attempts<q*500){attempts++;let numbers,stars;if(method==='historical'&&draws.length){numbers=weightedPick(n,50,true);stars=weightedPick(s,12,true)}else if(method==='cold'&&draws.length){numbers=weightedPick(n,50,false);stars=weightedPick(s,12,false)}else if(method==='balanced'){numbers=balancedPick();stars=sample(12,2)}else{numbers=sample(50,5);stars=sample(12,2)}const c={numbers,stars},k=key(c);if($('#avoidRecent').checked&&recent.has(k))continue;if($('#uniqueSet').checked&&seen.has(k))continue;seen.add(k);out.push(c)}
+  const pattern=(pair/10+triple/10)/2;
+  return freq*.65+pattern*.35;
+ };
+ const starOptions=[];
+ for(let a=1;a<=12;a++)for(let b=a+1;b<=12;b++){
+  const freq=(norm(s[a],minS,maxS)+norm(s[b],minS,maxS))/2;
+  const pattern=(starPairCounts.get(a+'-'+b)||0)/maxStarPair;
+  starOptions.push({stars:[a,b],score:freq*.65+pattern*.35});
  }
- lastGenerated=[...mathCombos,...out];
- const renderGroup=(items,offset,model)=>items.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions">'+(model?'<span class="combo-score">Puntuació heurística: '+c.score+'/100</span>':'<span class="combo-score">Equiprobable</span>')+'<button class="icon-button" data-copy="'+(offset+i)+'">Copia</button><button class="icon-button" data-save="'+(offset+i)+'">Desa</button></div></div>').join('');
- $('#generated').innerHTML='<section class="generated-group"><div class="generated-group-head"><h3>1. Simulació del sorteig oficial</h3><p>3 combinacions generades amb extracció uniforme sense reemplaçament (50 boles → 5; 12 boles → 2), com en el procediment oficial. Fixades en aquest dispositiu per al sorteig del '+formatDrawDate(drawDate)+'. No existeix un rànquing matemàtic: totes tenen exactament les mateixes opcions.</p></div>'+renderGroup(mathCombos,0,false)+'</section><section class="generated-group"><div class="generated-group-head"><h3>2. Les 3 millor puntuades pel model</h3><p>Ordenades per una heurística descriptiva basada en freqüències, patrons, absències i equilibri de l’històric. No estima probabilitats futures: sota un sorteig independent, aquests indicadors no donen avantatge predictiu.</p></div>'+(out.length?renderGroup(out,3,true):'<div class="empty-state">No s’han pogut calcular les combinacions del model.</div>')+'</section>';
- $('#saveAllBtn').disabled=!lastGenerated.length;$('#generatorMessage').textContent='6 combinacions preparades per al sorteig del '+formatDrawDate(drawDate)+'. Cada combinació té exactament 1 possibilitat entre 139.838.160. Les dades passades no canvien aquesta probabilitat.';
- $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));$$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
+ starOptions.sort((a,b)=>b.score-a.score||a.stars[0]-b.stars[0]||a.stars[1]-b.stars[1]);
+ const topNumbers=[];const keepTop=100;
+ for(let a=1;a<=46;a++)for(let b=a+1;b<=47;b++)for(let c=b+1;c<=48;c++)for(let d=c+1;d<=49;d++)for(let e=d+1;e<=50;e++){
+  const numbers=[a,b,c,d,e],score=numberScore(numbers);
+  if(topNumbers.length<keepTop){topNumbers.push({numbers,score});if(topNumbers.length===keepTop)topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
+  else if(score>topNumbers[topNumbers.length-1].score){topNumbers[topNumbers.length-1]={numbers,score};topNumbers.sort((x,y)=>y.score-x.score||x.numbers.join('-').localeCompare(y.numbers.join('-')))}
+ }
+ const ranked=[];
+ for(const candidate of topNumbers)for(const star of starOptions){
+  const rawScore=candidate.score*.8+star.score*.2;
+  ranked.push({numbers:candidate.numbers,stars:star.stars,score:Math.round(rawScore*100),rawScore});
+ }
+ ranked.sort((a,b)=>b.rawScore-a.rawScore||a.numbers.join('-').localeCompare(b.numbers.join('-'))||a.stars.join('-').localeCompare(b.stars.join('-')));
+ const unique=new Set();
+ for(const candidate of ranked){
+  const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
+  if(unique.has(comboKey))continue;
+  unique.add(comboKey);out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
+  if(out.length===3)break;
+ }
+ lastGenerated=out;
+ const renderGroup=items=>items.map((c,i)=>'<div class="combo-card"><div class="combo-balls">'+c.numbers.map(n=>'<span class="ball">'+n+'</span>').join('')+'<span style="color:#b6c0cb;padding:0 2px">|</span>'+c.stars.map(n=>'<span class="ball star">'+n+'</span>').join('')+'</div><div class="combo-actions"><span class="combo-score">Puntuació del model: '+c.score+'/100</span><button class="icon-button" data-copy="'+i+'">Copia</button><button class="icon-button" data-save="'+i+'">Desa</button></div></div>').join('');
+ $('#generated').innerHTML='<section class="generated-group"><div class="generated-group-head"><h3>Les 3 combinacions millor puntuades</h3><p>Rànquing determinista calculat amb l’històric carregat: freqüència individual (65%) i coaparicions de parelles/triples (35%) per als números; freqüència i coaparició de parelles per a les estrelles. Les mesures físiques no s’utilitzen perquè encara no disposem de mesures verificades de les boles d’EuroMillions ni d’identificadors de joc per sorteig. La puntuació ordena candidats, però no és una probabilitat ni demostra més opcions de sortir.</p></div>'+(out.length?renderGroup(out):'<div class="empty-state">No s’han pogut calcular les combinacions.</div>')+'</section>';
+ $('#saveAllBtn').disabled=!lastGenerated.length;
+ $('#generatorMessage').textContent='3 combinacions ordenades per puntuació del model per al sorteig del '+formatDrawDate(drawDate)+'. Cada combinació concreta continua tenint una probabilitat teòrica d’1 entre 139.838.160 si el sorteig és just i independent.';
+ $('#saveAllBtn').textContent='Desa les 3 combinacions';
+ $$('[data-copy]').forEach(b=>b.onclick=()=>copyCombo(lastGenerated[+b.dataset.copy]));
+ $$('[data-save]').forEach(b=>b.onclick=()=>saveCombo(lastGenerated[+b.dataset.save]));
 }
 function weightedPick(freq,max,high){const pool=[];for(let i=1;i<=max;i++){const weight=Math.max(1,high?freq[i]+1:(draws.length*2-freq[i]+1));for(let j=0;j<Math.min(30,weight);j++)pool.push(i)}const out=[];while(out.length< (max===50?5:2)){const x=pool[Math.floor(Math.random()*pool.length)];if(!out.includes(x))out.push(x)}return out.sort((a,b)=>a-b)}
 function balancedPick(){let best=sample(50,5),score=999;for(let i=0;i<80;i++){const a=sample(50,5),ev=a.filter(x=>x%2===0).length,sum=a.reduce((x,y)=>x+y,0),bands=[0,0,0,0,0];a.forEach(x=>bands[Math.min(4,Math.floor((x-1)/10))]++);const sc=Math.abs(ev-2.5)*4+Math.abs(sum-127.5)/15+bands.filter(x=>x>0).length*-1; if(sc<score){score=sc;best=a}}return best}
