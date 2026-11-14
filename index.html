@@ -25,7 +25,7 @@
       <button class="nav-item" data-view="simulator"><span>⌁</span> Simulador</button>
       <button class="nav-item" data-view="history"><span>▤</span> Històric</button>
       <button class="nav-item" data-view="checker"><span>✓</span> Comprova aposta</button>
-      <button class="nav-item" data-view="guide"><span>ⓘ</span> Guia del joc</button>
+      <button class="nav-item" data-view="guide"><span>ⓘ</span> Guia del joc</button><button class="nav-item" data-view="physics"><span>⚖</span> Estudi físic</button>
       <div class="sidebar-note"><strong>Juga amb criteri.</strong><p>Les dades descriuen el passat. No prediuen el pròxim sorteig.</p></div>
       <div class="side-footer">EUROMILIONS AI <span>v1.0.0</span></div>
     </aside>
@@ -111,7 +111,15 @@
         <div class="panel"><div class="eyebrow">FONTS I VERIFICACIÓ</div><h2>Consulta les fonts oficials</h2><p class="source-links"><a href="https://www.loteriasyapuestas.es/ca/centro-de-ayuda/como-se-juega/jugar-a-euromillones" target="_blank" rel="noopener">Com jugar a EuroMillions · Loteries i Apostes de l'Estat ↗</a><a href="https://www.loteriasyapuestas.es/es/euromillones/resultados" target="_blank" rel="noopener">Resultats oficials i escrutinis ↗</a><a href="https://www.lottery.ie/results/euromillions/history" target="_blank" rel="noopener">Arxiu històric · National Lottery Ireland ↗</a></p></div>
       </section>
       <footer class="footer"><span>EUROMILIONS AI · v1.0.0</span><span>Sense afiliació amb l'organitzador d'EuroMillions.</span><span>Juga responsablement · +18</span></footer>
-    </main>
+    <section class="view" id="view-physics">
+ <div class="probability-hero"><div><div class="eyebrow light">HIPÒTESI FÍSICA · CONTROL METROLÒGIC</div><h2>Les boles són realment equivalents?</h2><p>Investiga si massa o diàmetre poden estar associats a diferències observades en els resultats.</p></div><div class="jackpot-odds"><strong>62 boles</strong><span>50 números + 12 estrelles</span></div></div>
+ <div class="notice"><span>ⓘ</span><div><strong>Hipòtesi plausible, encara no demostrada</strong><p>La tinta, el recobriment, la massa, el diàmetre, l'esfericitat i la textura podrien influir en la interacció amb la màquina. Però no tenim mesures publicades de les boles concretes d'EuroMillions ni identificadors de cada joc de boles per sorteig. Per tant, l'històric per si sol no permet atribuir cap desviació a la física.</p></div></div>
+ <div class="panel"><div class="panel-head"><div><div class="eyebrow">REGISTRE EXPERIMENTAL</div><h2>Mesures de les boles</h2><p>Introdueix mesures reals obtingudes amb instruments calibrats. No omplis valors estimats ni deduïts del número imprès.</p></div></div>
+ <div class="sim-controls"><label class="field">Tipus de bola<select id="physicsKind" class="text-input"><option value="number">Números (1–50)</option><option value="star">Estrelles (1–12)</option></select></label><button id="physicsExport" class="button button-ghost">Exporta mesures CSV</button></div>
+ <div class="table-wrap"><table><thead><tr><th>Bola</th><th>Massa (g)</th><th>Diàmetre (mm)</th></tr></thead><tbody id="physicsRows"></tbody></table></div>
+ <div class="panel-foot"><span id="physicsSaved" class="small-muted">Les mesures es desen només en aquest dispositiu.</span><button id="physicsAnalyze" class="button button-primary">Analitza les mesures</button></div><div id="physicsResults" class="backtest-results"><div class="empty-state">Introdueix mesures reals per iniciar l'anàlisi.</div></div></div>
+ <div class="panel"><div class="panel-head"><div><div class="eyebrow">QUÈ CALDRIA PER VALIDAR-HO?</div><h2>Protocol científic proposat</h2></div></div><ol><li>Identificar el joc de boles i la màquina utilitzats en cada sorteig.</li><li>Mesurar massa, diàmetre, esfericitat, textura i característiques de la impressió amb equips calibrats.</li><li>Obtenir registres d'inspecció i toleràncies del fabricant o de l'operador.</li><li>Relacionar les mesures amb els resultats del mateix joc de boles, no amb un històric barrejat.</li><li>Contrastar qualsevol desviació amb un model probabilístic, corregint les comparacions múltiples i validant-la en dades independents.</li></ol><p class="small-muted">Les loteries sotmeses a controls metrològics solen comprovar especificacions com el pes, el diàmetre i la uniformitat. Aquest fet no demostra que existeixi un biaix en EuroMillions; caldrien les dades específiques del seu material.</p></div>
+ </section></main>
   </div>
   <script>
 (function(){
@@ -128,6 +136,6 @@
   });
 })();
 </script>
-<script data-app-script src="app.js?v=23" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
+<script data-app-script src="app.js?v=24" onerror="document.body.insertAdjacentHTML('beforeend','<div style=&quot;position:fixed;bottom:10px;left:10px;right:10px;background:#fee;color:#900;padding:12px;z-index:99999&quot;>No s’ha pogut carregar app.js</div>')"></script>
 </body>
 </html>
