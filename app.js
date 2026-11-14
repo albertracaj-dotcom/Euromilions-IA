@@ -102,11 +102,13 @@ function generate(){
  }
  ranked.sort((a,b)=>b.rawScore-a.rawScore||a.numbers.join('-').localeCompare(b.numbers.join('-'))||a.stars.join('-').localeCompare(b.stars.join('-')));
  const unique=new Set();
- const previousDraw=source.length?source[source.length-1]:null;
- const previousKey=previousDraw?previousDraw.numbers.join('-')+'|'+previousDraw.stars.join('-'):null;
+ const cutoffDate=new Date(drawDate+'T12:00:00');
+ cutoffDate.setFullYear(cutoffDate.getFullYear()-2);
+ const cutoff=cutoffDate.toISOString().slice(0,10);
+ const recentWinningKeys=new Set(source.filter(d=>d.date>=cutoff&&d.date<drawDate).map(d=>d.numbers.join('-')+'|'+d.stars.join('-')));
  for(const candidate of ranked){
   const comboKey=candidate.numbers.join('-')+'|'+candidate.stars.join('-');
-  if(unique.has(comboKey)||comboKey===previousKey)continue;
+  if(unique.has(comboKey)||recentWinningKeys.has(comboKey))continue;
   unique.add(comboKey);out.push({numbers:candidate.numbers,stars:candidate.stars,score:candidate.score});
   if(out.length===3)break;
  }
