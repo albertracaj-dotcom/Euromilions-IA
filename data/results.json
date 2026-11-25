@@ -1,9 +1,9 @@
 {
-  "updated": "2026-11-21",
+  "updated": "2026-11-25",
   "sourceName": "LottoData / lottery-archive (arxiu comunitari; dades no oficials)",
   "sourceUrl": "https://github.com/dev-baris/lottery-archive/blob/main/eu/euromillions/results.csv",
-  "drawCount": 2000,
-  "latestDraw": "2026-11-20",
+  "drawCount": 2001,
+  "latestDraw": "2026-11-24",
   "draws": [
     {
       "date": "2004-02-13",
@@ -28003,6 +28003,20 @@
       "stars": [
         1,
         8
+      ]
+    },
+    {
+      "date": "2026-11-24",
+      "numbers": [
+        3,
+        5,
+        37,
+        44,
+        49
+      ],
+      "stars": [
+        5,
+        6
       ]
     }
   ]
